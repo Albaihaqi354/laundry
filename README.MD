@@ -18,7 +18,8 @@ Aplikasi ini di buat mengumakan Golang
     CREATE TABLE mst_customer (
         id SERIAL PRIMARY KEY,
         nama VARCHAR(100) NOT NULL,
-        no_hp VARCHAR(20) NOT NULL
+        no_hp VARCHAR(15) NOT NULL,
+        alamat VARCHAR(20) NOT NULL
     );
 
     CREATE TABLE mst_service (
@@ -27,14 +28,13 @@ Aplikasi ini di buat mengumakan Golang
         harga VARCHAR(20) NOT NULL
     );
 
-    CREATE TABLE mst_transaction (
-        id SERIAL PRIMARY KEY,
-        id_customer INT NOT NULL,
-        tanggal_masuk DATE NOT NULL,
-        tanggal_keluar DATE NOT NULL,
-        diterima_oleh VARCHAR(100) NOT NULL,
-        total_harga FLOAT DEFAULT 0,
-        FOREIGN KEY (id_customer) REFERENCES mst_customer (id)
+   CREATE TABLE mst_transaction (
+	id SERIAL PRIMARY KEY,
+	id_customer INT REFERENCES mst_customer(id),
+	tanggal_masuk DATE NOT NULL,
+	tanggal_keluar DATE NOT NULL,
+	diterima_oleh VARCHAR(100) NOT NULL,
+	total_harga INT default 0
     );
 
     CREATE TABLE tx_transaction_enrollment (
@@ -72,12 +72,12 @@ Aplikasi ini memiliki beberapa fungsi utama untuk mengelola data pelanggan, laya
     ```go
     customers := viewCustomers()
     for _, customer := range customers {
-        fmt.Println(customer.Id, customer.Nama, customer.NoHp)
+        fmt.Println(customer.Id, customer.Nama, customer.NoHp, customer.Alamat)
     }
     ```
 - Menambahkan Customer baru:
     ```go
-    customer := entity.Customer{Id: 1, Nama: "Jesicca", NoHp: "0812654987"}
+    customer := entity.Customer{Id: 2, Nama: "Bian", NoHp: "08772772986", Alamat : "Bandung"}
     insertCustomer(customer)
     ```
 - Memperbarui data Customer:
@@ -99,7 +99,7 @@ Aplikasi ini memiliki beberapa fungsi utama untuk mengelola data pelanggan, laya
     ```
 - Menambahkan Service baru:
     ```go
-    service := entity.Service{Id: 3, Pelayanan: "Laundry Boneka", Harga: "25000.00"}
+    service := entity.Service{Id: 4, Pelayanan: "Cuci Karpet", Harga: "25000.00"}
     insertService(service)
     ```
 - Memperbarui data Service:
@@ -121,14 +121,14 @@ Aplikasi ini memiliki beberapa fungsi utama untuk mengelola data pelanggan, laya
     ```
 - Menambahkan Transaction baru:
     ```go
-    transaction := entity.Transaction{Id: 1, IdCustomer: 1, TanggalMasuk: "2022-08-18", TanggalKEluar: "2022-08-20", DiterimaOleh: "Mirna"}
+    transaction := entity.Transaction{Id: 2, IdCustomer: 2, TanggalMasuk: "2022-08-18", TanggalKEluar: "2022-08-20", DiterimaOleh: "Mirna"}
     insertTransaction(transaction)
     ```
 
 ### Enrollment Transaksi
 - Menambahkan enrolmen Transaction:
     ```go
-    transactionEnrollment := entity.TransactionEnrollment{Id: 3, IdTransaction: 1, IdService: 3, Jumlah: "1", Satuan: "Buah", Total: "50000.00"}
+    transactionEnrollment := entity.TransactionEnrollment{Id: 4, IdTransaction: 2, IdService: 4, Jumlah: "1", Satuan: "Buah", Total: "25000.00"}
     enrollmentSubject(transactionEnrollment)
     ```
 

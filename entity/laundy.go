@@ -1,9 +1,10 @@
 package entity
 
 type Customer struct {
-	Id   int
-	Nama string
-	NoHp string
+	Id     int
+	Nama   string
+	NoHp   string
+	Alamat string
 }
 
 type Transaction struct {
@@ -12,6 +13,7 @@ type Transaction struct {
 	TanggalMasuk  string
 	TanggalKEluar string
 	DiterimaOleh  string
+	TotalHarga    int
 }
 
 type Service struct {
@@ -26,5 +28,5 @@ type TransactionEnrollment struct {
 	IdService     int
 	Jumlah        string
 	Satuan        string
-	Total         string
+	Total         int
 }

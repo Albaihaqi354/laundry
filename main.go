@@ -2,9 +2,9 @@ package main
 
 import (
 	"database/sql"
-	"enigma_laundy/entity"
 	"errors"
 	"fmt"
+	"laundy/entity"
 	"regexp"
 	"strconv"
 	"time"
@@ -17,48 +17,48 @@ const (
 	port     = 5432
 	user     = "postgres"
 	password = "Whobay123@"
-	dbname   = "enigma_laundry"
+	dbname   = "laundry"
 )
 
 var psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
 func main() {
 	// MST CUSTOMER
-	customers := viewCustomers()
-	for _, customer := range customers {
-		fmt.Println(customer.Id, customer.Nama, customer.NoHp)
-	}
+	// customers := viewCustomers()
+	// for _, customer := range customers {
+	// 	fmt.Println(customer.Id, customer.Nama, customer.NoHp, customer.Alamat)
+	// }
 
-	customer := entity.Customer{Id: 1, Nama: "Jesicca", NoHp: "0812654987"}
+	// customer := entity.Customer{Id: 2, Nama: "Bian", NoHp: "087727726319", Alamat: "Bandung"}
 
-	insertCustomer(customer)
-	updateCustomer(customer)
-	deleteCustomer("1")
+	// insertCustomer(customer)
+	// updateCustomer(customer)
+	// deleteCustomer("2")
 
 	// MST SERVICE
-	services := viewService()
-	for _, service := range services {
-		fmt.Println(service.Id, service.Pelayanan, service.Harga)
-	}
+	// services := viewService()
+	// for _, service := range services {
+	// 	fmt.Println(service.Id, service.Pelayanan, service.Harga)
+	// }
 
-	service := entity.Service{Id: 3, Pelayanan: "Laundry Boneka", Harga: "25000.00"}
+	// service := entity.Service{Id: 4, Pelayanan: "Laundry Karpet", Harga: "50000.00"}
 
-	insertService(service)
-	updateService(service)
-	deleteService("1")
+	// insertService(service)
+	// updateService(service)
+	// deleteService("1")
 
 	// MST TRANSACTION
-	transactions := viewTransaction()
-	for _, transaction := range transactions {
-		fmt.Println(transaction.Id, transaction.IdCustomer, transaction.TanggalMasuk, transaction.TanggalKEluar, transaction.DiterimaOleh)
-	}
+	// transactions := viewTransaction()
+	// for _, transaction := range transactions {
+	// 	fmt.Println(transaction.Id, transaction.IdCustomer, transaction.TanggalMasuk, transaction.TanggalKEluar, transaction.DiterimaOleh)
+	// }
 
-	transaction := entity.Transaction{Id: 1, IdCustomer: 1, TanggalMasuk: "2022-08-18", TanggalKEluar: "2022-08-20", DiterimaOleh: "Mirna"}
+	// transaction := entity.Transaction{Id: 2, IdCustomer: 2, TanggalMasuk: "2022-08-18", TanggalKEluar: "2022-08-20", DiterimaOleh: "Mirna"}
 
-	insertTransaction(transaction)
+	// insertTransaction(transaction)
 
 	// TX TRANSACTION ENROLLMENT
-	transactionEnrollment := entity.TransactionEnrollment{Id: 3, IdTransaction: 1, IdService: 3, Jumlah: "2", Satuan: "Buah", Total: "50000.00"}
+	transactionEnrollment := entity.TransactionEnrollment{Id: 4, IdTransaction: 2, IdService: 4, Jumlah: "1", Satuan: "Buah", Total: 50000}
 
 	enrollmentSubject(transactionEnrollment)
 
@@ -89,7 +89,7 @@ func scanCustomer(rows *sql.Rows) []entity.Customer {
 
 	for rows.Next() {
 		customer := entity.Customer{}
-		err := rows.Scan(&customer.Id, &customer.Nama, &customer.NoHp)
+		err := rows.Scan(&customer.Id, &customer.Nama, &customer.NoHp, &customer.Alamat)
 		if err != nil {
 			panic(err)
 		}
@@ -105,6 +105,10 @@ func scanCustomer(rows *sql.Rows) []entity.Customer {
 func validateCustomer(customer entity.Customer) error {
 	if customer.Nama == "" {
 		return errors.New("Nama Tidak Boleh Kosong")
+	}
+
+	if customer.Alamat == "" {
+		return errors.New("Alamat Tidak Boleh Kosong")
 	}
 
 	re := regexp.MustCompile(`^\+?(\d.*){3,}$`)
@@ -124,9 +128,9 @@ func insertCustomer(customer entity.Customer) {
 	db := connectDb()
 	defer db.Close()
 
-	sqlStatment := "INSERT INTO mst_customer (id, nama, no_hp) VALUES ($1, $2, $3)"
+	sqlStatment := "INSERT INTO mst_customer (id, nama, no_hp, alamat) VALUES ($1, $2, $3, $4)"
 
-	_, err := db.Exec(sqlStatment, customer.Id, customer.Nama, customer.NoHp)
+	_, err := db.Exec(sqlStatment, customer.Id, customer.Nama, customer.NoHp, customer.Alamat)
 	if err != nil {
 		panic(err)
 	} else {
@@ -143,9 +147,9 @@ func updateCustomer(customer entity.Customer) {
 	db := connectDb()
 	defer db.Close()
 
-	sqlStatment := "UPDATE mst_customer SET nama = $2, no_hp = $3 WHERE id = $1;"
+	sqlStatment := "UPDATE mst_customer SET nama = $2, no_hp = $3, alamat = $4 WHERE id = $1;"
 
-	_, err := db.Exec(sqlStatment, customer.Id, customer.Nama, customer.NoHp)
+	_, err := db.Exec(sqlStatment, customer.Id, customer.Nama, customer.NoHp, customer.Alamat)
 	if err != nil {
 		panic(err)
 	} else {
@@ -402,22 +406,17 @@ func insertTransactionEnrolment(transactionEnrollment entity.TransactionEnrollme
 	validate(err, "Insert", tx)
 }
 
-func getSumTotalOfTransaction(id int, tx *sql.Tx) float64 {
+func getSumTotalOfTransaction(id int, tx *sql.Tx) int {
 	sumTotal := "SELECT SUM(total) FROM tx_transaction_enrollment WHERE id_transaction = $1;"
 
-	var takenTotalStr string
-	err := tx.QueryRow(sumTotal, id).Scan(&takenTotalStr)
+	takenTotal := 0
+	err := tx.QueryRow(sumTotal, id).Scan(&takenTotal)
 	validate(err, "Select", tx)
-
-	takenTotal, err := strconv.ParseFloat(takenTotalStr, 64)
-	if err != nil {
-		validate(err, "Convert", tx)
-	}
 
 	return takenTotal
 }
 
-func updateTransactionEnrolment(takenTotal float64, transactionId int, tx *sql.Tx) {
+func updateTransactionEnrolment(takenTotal int, transactionId int, tx *sql.Tx) {
 	updateTransactionEnrolment := "UPDATE mst_transaction SET total_harga = $1 WHERE id = $2;"
 
 	_, err := tx.Exec(updateTransactionEnrolment, takenTotal, transactionId)

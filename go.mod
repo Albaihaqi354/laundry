@@ -1,4 +1,4 @@
-module enigma_laundy
+module laundy
 
 go 1.22.3
 
